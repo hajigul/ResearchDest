@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ResearchDesk</title>
+<style>
+:root{
+  --bg:#f5f6fa;--surface:#ffffff;--surface2:#f8f9fc;--border:#e3e7ef;--border2:#cfd6e4;
+  --text:#0f172a;--muted:#64748b;--accent:#4f46e5;--accent-h:#4338ca;--accent-soft:#eef0ff;
+  --ok:#047857;--ok-bg:#e7f8f0;--warn:#b45309;--warn-bg:#fff4df;--bad:#be123c;--bad-bg:#ffe9ee;
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.05);
+  --side:#0f172a;--side-text:#cbd5e1;--side-muted:#7c8aa5;--side-active:#1e293b;
+}
+[data-theme=dark]{
+  --bg:#0a0e1a;--surface:#111729;--surface2:#0e1424;--border:#1f2a40;--border2:#2c3a57;
+  --text:#e6eaf3;--muted:#92a0b8;--accent:#818cf8;--accent-h:#a5b0ff;--accent-soft:#1a2142;
+  --ok:#4ade9a;--ok-bg:#0f2a21;--warn:#f5b84b;--warn-bg:#2d2410;--bad:#ff7a93;--bad-bg:#2f1520;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+  --side:#080b15;--side-active:#141b30;
+}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--text);font:14.5px/1.6 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,select,input,textarea{font:inherit;color:inherit}
+
+/* layout */
+.app{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
+.side{background:var(--side);color:var(--side-text);padding:22px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:12px;align-items:center;padding:0 8px 18px}
+.logo{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,#6366f1,#22d3ee);letter-spacing:-.5px}
+.bname{font-weight:700;font-size:16px;color:#fff;letter-spacing:-.2px}
+.bsub{font-size:11.5px;color:var(--side-muted)}
+.navlbl{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--side-muted);padding:12px 10px 6px}
+.tab{display:flex;gap:11px;align-items:center;width:100%;text-align:left;background:none;border:0;color:var(--side-text);padding:9px 10px;border-radius:9px;cursor:pointer;font-weight:500}
+.tab svg{width:18px;height:18px;flex:none;opacity:.8}
+.tab:hover{background:var(--side-active)}
+.tab.on{background:var(--side-active);color:#fff;box-shadow:inset 3px 0 0 #818cf8}
+.tab.on svg{opacity:1}
+.sidefoot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:14px 4px 0;border-top:1px solid #1e293b}
+.status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--side-text)}
+.dot{width:8px;height:8px;border-radius:50%;background:#f5b84b;display:inline-block;flex:none}
+.dot.on{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.2)}.dot.off{background:#fb7185}
+.side select{width:100%;background:#1e293b;border:1px solid #2b3850;color:#e2e8f0;border-radius:8px;padding:7px 9px;outline:0}
+.side .lbl{font-size:11px;color:var(--side-muted);margin-bottom:-4px}
+.themebtn{background:transparent;border:1px solid #2b3850;color:var(--side-text);border-radius:8px;padding:7px;cursor:pointer}
+.themebtn:hover{background:var(--side-active)}
+
+.main{min-width:0}
+.top{padding:26px 36px 14px;max-width:1100px}
+.top h1{margin:0;font-size:22px;letter-spacing:-.3px}
+.top p{margin:4px 0 0;color:var(--muted)}
+.content{padding:0 36px 36px;max-width:1100px}
+
+/* controls */
+select,input[type=text],textarea{background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:9px 11px;outline:0;transition:border-color .15s,box-shadow .15s}
+input[type=text]{flex:1;min-width:220px}
+textarea{width:100%;min-height:130px;resize:vertical}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.go{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:9px 20px;font-weight:600;cursor:pointer;transition:background .15s}
+.go:hover{background:var(--accent-h)}
+.go.stop{background:var(--bad)}
+.ghost,.mini{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:7px 13px;cursor:pointer;color:var(--text);text-decoration:none;display:inline-block;font-weight:500}
+.ghost:hover,.mini:hover{border-color:var(--accent);color:var(--accent)}
+.mini{padding:3px 10px;font-size:12px}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:5px 13px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.muted{color:var(--muted);font-size:12.5px}
+label.row{cursor:pointer}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+h2{font-size:14px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:650}
+.empty{text-align:center;padding:34px 10px;color:var(--muted)}
+.empty b{display:block;color:var(--text);font-size:15px;margin-bottom:4px}
+
+/* badges */
+.pill{font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.pill.ok{color:var(--ok);background:var(--ok-bg);border-color:transparent}
+.pill.warn{color:var(--warn);background:var(--warn-bg);border-color:transparent}
+.pill.bad{color:var(--bad);background:var(--bad-bg);border-color:transparent}
+
+/* papers */
+.paper{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s}
+.paper:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.paper.hl,.src.hl{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ptop{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+.pt{color:var(--text);font-weight:650;text-decoration:none}.pt:hover{color:var(--accent)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:42%}
+.pm{font-size:12.5px;color:var(--muted);margin:4px 0 6px}
+.ps{font-size:13.5px;color:var(--muted)}
+.pact{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+
+/* text blocks */
+.ans{white-space:pre-wrap;font-size:15px;margin:10px 0;line-height:1.7}
+.cite{color:var(--accent);font-weight:700;cursor:pointer;text-decoration:none}
+.errbox{border:1px solid var(--bad);background:var(--bad-bg);color:var(--bad);border-radius:10px;padding:10px 13px;margin:8px 0}
+.warn{border:1px solid transparent;background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:13px;margin-top:8px}
+.refs{font-size:13px;color:var(--muted);margin-top:12px;white-space:pre-wrap;border-top:1px solid var(--border);padding-top:12px}
+code{background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:6px;font-size:12px}
+.spin{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--accent);animation:sp .8s linear infinite;margin-right:8px;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+
+/* sources, citation rows */
+.src{border:1px solid var(--border);background:var(--surface2);border-radius:10px;padding:10px 13px;margin-top:8px;font-size:13px}
+.src b{color:var(--accent)}
+.bar{height:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;overflow:hidden;margin:12px 0}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.crow{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.crow .ref{font-size:13.5px}.crow .m{font-size:13px;color:var(--muted);margin-top:8px}
+.banner{border:1px solid var(--border);background:var(--surface);border-left-width:4px;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.foot{margin:10px 0 0;padding:16px 0 0;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 18px;border-radius:10px;box-shadow:var(--shadow);z-index:9;font-size:13px}
+
+@media(max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px}
+  .brand{padding:0 10px 0 0}.navlbl,.sidefoot .lbl{display:none}
+  .tab{width:auto}.sidefoot{flex-direction:row;margin:0;border:0;padding:0;flex-wrap:wrap}
+  .top,.content{padding-left:16px;padding-right:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand"><div class="logo">R</div><div><div class="bname">ResearchDesk</div><div class="bsub">Private research assistant</div></div></div>
+    <div class="navlbl">Workspace</div>
+    <button class="tab on" data-tab="discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Discover</button>
+    <button class="tab" data-tab="related"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Related Work</button>
+    <button class="tab" data-tab="cite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Citation Check</button>
+    <button class="tab" data-tab="qa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5Z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>Thesis Q&amp;A</button>
+
+    <div class="sidefoot">
+      <div class="status"><span class="dot" id="dot"></span><span id="st">Checking Ollama…</span></div>
+      <div class="lbl">Language model</div>
+      <select id="model"></select>
+      <button class="themebtn" id="theme">Switch light / dark</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top"><h1 id="pgTitle">Discover papers</h1><p id="pgSub">Search arXiv and OpenAlex and build a reference library.</p></div>
+    <div class="content">
+
+      <!-- ============ DISCOVER ============ -->
+      <section class="panel" id="p-discover">
+        <div class="card">
+          <div class="row"><input type="text" id="dQ" placeholder="Topic, e.g. recent papers on knowledge graph completion, or an arXiv ID"><button class="go" id="dGo">Search</button></div>
+          <div class="row" style="margin-top:12px">
+            <select id="dMode"><option value="fast">Fast: direct search</option><option value="agent">Agent: model picks tools</option></select>
+            <select id="dSrc"><option value="auto">Source: auto</option><option value="arxiv">arXiv</option><option value="openalex">OpenAlex (citations)</option></select>
+            <label class="row muted"><input type="checkbox" id="dRecent"> Prefer recent</label>
+          </div>
+          <div class="chips" id="dChips"></div>
+        </div>
+        <div id="dOut"><div class="card empty"><b>Search the literature</b>Results appear here as verified paper cards, followed by a short AI overview.</div></div>
+        <div class="card"><h2>Library <span class="row"><span class="pill" id="libN">0</span><button class="mini" id="libBib">BibTeX</button><button class="mini" id="libCsv">CSV</button><button class="mini" id="libClr">Clear</button></span></h2><div id="lib" class="muted"></div></div>
+      </section>
+
+      <!-- ============ RELATED WORK ============ -->
+      <section class="panel" id="p-related" hidden>
+        <div class="card">
+          <h2>Your topic, title or abstract</h2>
+          <textarea id="rText" placeholder="Paste your abstract, or type a topic…"></textarea>
+          <div class="row" style="margin-top:12px;justify-content:space-between"><div class="chips" id="rChips" style="margin:0"></div><button class="go" id="rGo">Draft related work</button></div>
+        </div>
+        <div id="rOut" hidden>
+          <div class="muted" id="rSt" style="margin-bottom:10px"></div><div id="rErr"></div>
+          <div class="grid">
+            <div class="card"><h2>Draft <span class="row"><button class="mini" id="rCopy" hidden>Copy text</button><button class="mini" id="rDl" hidden>Download .md</button></span></h2>
+              <div class="ans" id="rDraft"></div><div id="rWarn"></div><div class="refs" id="rRefs"></div>
+              <div class="row" style="margin-top:12px"><button class="mini" id="rCopyRefs" hidden>Copy references</button><button class="mini" id="rCopyBib" hidden>Copy BibTeX</button></div>
+              <div class="muted" id="rMeta" style="margin-top:8px"></div></div>
+            <div class="card"><h2>Papers used <button class="go" id="rRewrite" hidden style="padding:5px 13px;font-size:12.5px">Rewrite with selected</button></h2>
+              <div class="row" id="rQ" style="margin-bottom:12px"></div><div id="rPapers"></div>
+              <details id="rLogBox" hidden><summary class="muted" style="cursor:pointer">Search log</summary><ul class="muted" id="rLog"></ul></details>
+              <div class="muted" style="margin-top:8px">Untick papers that don't fit, then rewrite. The model only sees ticked papers.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CITATION CHECK ============ -->
+      <section class="panel" id="p-cite" hidden>
+        <div class="card">
+          <h2>Reference checker</h2>
+          <textarea id="cText" placeholder="Paste a reference list (one per line, or numbered [1] / 1.)…"></textarea>
+          <div class="row" style="margin-top:12px;justify-content:space-between">
+            <div class="row"><select id="cPdf"></select><button class="ghost" id="cPdfGo">Check references in this PDF</button></div>
+            <div class="row"><button class="ghost" id="cDemo">Load test references</button><button class="go" id="cGo">Check pasted references</button></div>
+          </div>
+          <div class="legend"><span><span class="pill ok">Verified</span> title, year and first author agree</span><span><span class="pill warn">Check details</span> title found, year or author differs</span><span><span class="pill warn">Possible</span> partial title match</span><span><span class="pill bad">Not found</span> nothing close in OpenAlex or arXiv</span></div>
+          <div class="muted" style="margin-top:8px">"Not found" does not prove a reference is fake: books, reports and some venues are not indexed. Check those by hand.</div>
+        </div>
+        <div id="cOut" hidden>
+          <div class="card">
+            <div class="muted" id="cSt"></div><div class="bar"><i id="cBar"></i></div>
+            <div class="row" style="justify-content:space-between"><div class="row" id="cSum"></div>
+              <div class="row"><select id="cFilter"><option value="all">Show all</option><option value="verified">Verified</option><option value="check">Check details</option><option value="possible">Possible</option><option value="not_found">Not found</option><option value="error">Errors</option></select>
+              <button class="mini" id="cCsv" hidden>Export CSV</button><button class="mini" id="cBib" hidden>Copy BibTeX (matched)</button></div></div>
+            <div id="cErr"></div>
+          </div>
+          <div id="cRows"></div>
+        </div>
+      </section>
+
+      <!-- ============ THESIS Q&A ============ -->
+      <section class="panel" id="p-qa" hidden>
+        <div class="banner" id="qaBanner"><span id="qaInfo">Loading…</span><button class="mini" id="qaReindex">Rebuild index</button></div>
+        <div class="card">
+          <div class="row"><input type="text" id="qaQ" placeholder="Ask a question about your thesis…"><button class="go" id="qaGo">Ask</button></div>
+          <div class="chips" id="qaChips"></div>
+        </div>
+        <div id="qaFeed"></div>
+      </section>
+
+      <div class="foot">The language model and your thesis stay on your computer. Searches and reference checks send short queries to arXiv and OpenAlex. Cards, references and sources are real data; paragraphs and answers are model-written, so verify them.</div>
+    </div>
+  </main>
+</div>
+<div id="toast" hidden></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const store = {get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+const MODEL = () => $('#model').value;
+const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+const withCites = s => esc(s).replace(/\[(\d+)\]/g,(m,n)=>`<a class="cite" data-n="${n}">[${n}]</a>`);
+const flash = (b,t) => { const o=b.textContent; b.textContent=t; setTimeout(()=>b.textContent=o,1200); };
+const copy = (b,t) => { navigator.clipboard.writeText(t); flash(b,'Copied'); };
+function toast(t){ const e=$('#toast'); e.textContent=t; e.hidden=false; setTimeout(()=>e.hidden=true,2500); }
+function download(name,text,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); }
+
+/* one task at a time */
+let busy=false, ctrl=null, activeBtn=null;
+function bind(btn,label,job){
+  btn.onclick = async () => {
+    if (busy) { if (activeBtn===btn) ctrl.abort(); else toast('Another task is running. Wait or press Stop.'); return; }
+    busy=true; activeBtn=btn; ctrl=new AbortController(); btn.textContent='Stop'; btn.classList.add('stop');
+    try { await job(ctrl.signal); } catch(e) { if (e.name!=='AbortError') toast(e.message); }
+    finally { busy=false; activeBtn=null; btn.textContent=label; btn.classList.remove('stop'); }
+  };
+}
+async function ndjson(url,body,signal,onEv){
+  const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},signal,body:JSON.stringify(body)});
+  if (!res.ok) throw new Error('Server returned '+res.status);
+  const reader=res.body.getReader(), dec=new TextDecoder(); let buf='';
+  while (true) {
+    const {done,value}=await reader.read(); if (done) break;
+    buf+=dec.decode(value,{stream:true}); let i;
+    while ((i=buf.indexOf('\n'))>=0) { const line=buf.slice(0,i).trim(); buf=buf.slice(i+1); if (line) onEv(JSON.parse(line)); }
+  }
+}
+const chips = (box,list,fn) => list.forEach(t => { const b=document.createElement('button'); b.className='chip'; b.textContent=t; b.onclick=()=>fn(t); $(box).appendChild(b); });
+const enter = (inp,btn) => $(inp).addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); $(btn).click(); } });
+
+/* tabs, theme */
+const TITLES={discover:['Discover papers','Search arXiv and OpenAlex and build a reference library.'],
+  related:['Related work drafter','Turn a topic or abstract into a cited paragraph with a real reference list.'],
+  cite:['Citation checker','Verify each reference against OpenAlex and arXiv.'],
+  qa:['Thesis Q&A','Ask questions about your thesis and get answers with page citations.']};
+$$('.tab').forEach(t => t.onclick = () => {
+  $$('.tab').forEach(x=>x.classList.toggle('on',x===t)); $$('.panel').forEach(p=>p.hidden = p.id!=='p-'+t.dataset.tab);
+  const [h,s]=TITLES[t.dataset.tab]; $('#pgTitle').textContent=h; $('#pgSub').textContent=s; store.set('tab',t.dataset.tab);
+});
+const root=document.documentElement; root.dataset.theme=store.get('theme2','light');
+$('#theme').onclick = () => { root.dataset.theme = root.dataset.theme==='dark'?'light':'dark'; store.set('theme2',root.dataset.theme); };
+
+/* BibTeX */
+function bib(p){
+  const au=p.authors||[], authors=au.join(' and ')+((p.authors_total||0)>au.length?' and others':'');
+  const year=String(p.published||p.year||'').slice(0,4);
+  const last=(au[0]||'anon').split(' ').pop().toLowerCase().replace(/[^a-z]/g,'');
+  const w=(p.title||'').split(/\s+/).find(x=>x.length>3&&/^[A-Za-z]+$/.test(x))||'paper';
+  const key=last+year+w.toLowerCase(), t=s=>String(s||'').replace(/([&%_#])/g,'\\$1');
+  if (p.source==='arxiv') return `@misc{${key},\n  title={${t(p.title)}},\n  author={${t(authors)}},\n  year={${year}},\n  eprint={${p.id}},\n  archivePrefix={arXiv},\n  url={${p.link}}\n}`;
+  return `@article{${key},\n  title={${t(p.title)}},\n  author={${t(authors)}},\n  year={${year}},\n  journal={${t(p.venue)}},\n  doi={${p.id}},\n  url={${p.link}}\n}`;
+}
+const csvCell = v => '"'+String(v??'').replace(/"/g,'""')+'"';
+
+/* ================= DISCOVER ================= */
+const known=new Map(); let lib=store.get('lib',[]);
+const REL={high:['ok','On topic'],partial:['warn','Partly relevant'],low:['bad','Weak match']};
+const MATCH={exact:['ok','Exact phrase'],relaxed:['warn','Relaxed match'],broad:['warn','Broad match'],openalex:['ok','OpenAlex'],fallback:['warn','arXiv fallback']};
+const isSaved = p => lib.some(x=>x.link===p.link);
+function renderLib(){
+  $('#libN').textContent=lib.length;
+  $('#lib').innerHTML = lib.length ? lib.map((p,i)=>`<div style="padding:4px 0"><a class="pt" href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.title)}</a> <button class="mini" data-del="${i}">Remove</button></div>`).join('') : 'Saved papers appear here.';
+  $$('[data-act=save]').forEach(b => { const p=known.get(b.dataset.k); if (p) b.textContent=isSaved(p)?'★ Saved':'☆ Save'; });
+}
+function card(p,full){
+  known.set(p.link,p); const k=esc(p.link), rel=REL[p.relevance], au=p.authors||[];
+  const who = full ? au.join(', ')+((p.authors_total||0)>au.length?` +${p.authors_total-au.length} more`:'') : au.slice(0,3).join(', ')+((p.authors_total||0)>3?' et al.':'');
+  const meta=[p.published,who,p.venue].filter(Boolean).map(esc).join(' · ');
+  const cites = p.citations!=null ? `<span class="pill">${Number(p.citations).toLocaleString()} citations</span>` : '';
+  return `<div class="paper"><div class="ptop"><a class="pt" href="${k}" target="_blank" rel="noopener">${esc(p.title)}</a>
+    <div class="badges">${rel?`<span class="pill ${rel[0]}">${rel[1]}</span>`:''}${cites}<span class="pill">${p.source==='arxiv'?'arXiv':'OpenAlex'}</span></div></div>
+    <div class="pm">${meta}</div><div class="ps">${esc(p.summary)}</div>
+    <div class="pact"><button class="mini" data-act="save" data-k="${k}">${isSaved(p)?'★ Saved':'☆ Save'}</button><button class="mini" data-act="bib" data-k="${k}">BibTeX</button>
+    ${p.pdf_link?`<a class="mini" href="${esc(p.pdf_link)}" target="_blank" rel="noopener">PDF</a>`:''}</div></div>`;
+}
+document.addEventListener('click', e => {
+  const d=e.target.dataset.del; if (d!==undefined) { lib.splice(+d,1); store.set('lib',lib); renderLib(); return; }
+  const b=e.target.closest('[data-act]'); if (!b) return; const p=known.get(b.dataset.k); if (!p) return;
+  if (b.dataset.act==='save') { lib = isSaved(p) ? lib.filter(x=>x.link!==p.link) : [...lib,p]; store.set('lib',lib); renderLib(); }
+  else if (b.dataset.act==='bib') copy(b,bib(p));
+});
+$('#libBib').onclick = () => lib.length && download('library.bib',lib.map(bib).join('\n\n'),'text/plain');
+$('#libCsv').onclick = () => lib.length && download('library.csv',['title,authors,date,venue,citations,link'].concat(lib.map(p=>[p.title,(p.authors||[]).join('; '),p.published,p.venue,p.citations,p.link].map(csvCell).join(','))).join('\n'),'text/csv');
+$('#libClr').onclick = () => { lib=[]; store.set('lib',lib); renderLib(); };
+
+bind($('#dGo'),'Search', async signal => {
+  const q=$('#dQ').value.trim(); if (!q) return;
+  $('#dOut').innerHTML=`<div class="card"><div class="muted" id="dSt"><span class="spin"></span>Starting…</div><div id="dRes"></div><div class="ans" id="dAns"></div><div class="muted" id="dStats"></div></div>`;
+  let ans='';
+  await ndjson('/api/search',{question:q,model:MODEL(),mode:$('#dMode').value,source:$('#dSrc').value,recent:$('#dRecent').checked},signal,ev=>{
+    if (ev.type==='status') $('#dSt').innerHTML=`<span class="spin"></span>${esc(ev.text)}`;
+    else if (ev.type==='tool_result') {
+      const r=ev.result||{};
+      if (r.error) $('#dRes').insertAdjacentHTML('beforeend',`<div class="errbox">${esc(r.error)}</div>`);
+      else if (r.papers) { const m=MATCH[r.match_type]||['warn',r.match_type];
+        $('#dRes').insertAdjacentHTML('beforeend',`<div class="row" style="margin:6px 0 12px"><span class="pill ${m[0]}">${esc(m[1])}</span><span class="muted">${r.papers.length} papers</span></div>`+r.papers.map(p=>card(p)).join('')); }
+      else if (r.title) $('#dRes').insertAdjacentHTML('beforeend',card(r,true));
+    }
+    else if (ev.type==='token') { ans+=ev.text; $('#dAns').innerHTML=rich(ans); }
+    else if (ev.type==='answer' && !ans) $('#dAns').innerHTML=rich(ev.text);
+    else if (ev.type==='stats') $('#dStats').textContent=`${ev.total}s total · model ${ev.model}s · search ${ev.tools}s · ${ev.mode} mode`;
+    else if (ev.type==='error') $('#dRes').insertAdjacentHTML('beforeend',`<div class="errbox">${esc(ev.text)}</div>`);
+  });
+  $('#dSt').hidden=true;
+});
+enter('#dQ','#dGo');
+chips('#dChips',["Find recent papers on knowledge graph completion.","Highly cited papers on link prediction.","Find papers on drug target prediction.","Get the full details of arXiv 1706.03762."],t=>{ $('#dQ').value=t; $('#dGo').click(); });
+
+/* ================= RELATED WORK ================= */
+let rPapers=[], rSection='', rRefs='';
+const R_BTNS=['rCopy','rDl','rCopyRefs','rCopyBib','rRewrite'];
+function rRenderPapers(){
+  $('#rPapers').innerHTML = rPapers.map((p,i)=>{
+    const rel=REL[p.relevance], au=(p.authors||[]).slice(0,3).join(', ')+((p.authors_total||0)>3?' et al.':'');
+    return `<div class="paper" id="rp${i+1}"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><input type="checkbox" checked data-i="${i}" style="margin-top:6px">
+      <div><a class="pt" href="${esc(p.link)}" target="_blank" rel="noopener">[${i+1}] ${esc(p.title)}</a>
+      <div class="pm">${esc((p.published||'').slice(0,4))} · ${esc(au)} ${rel?`<span class="pill ${rel[0]}">${rel[1]}</span>`:''}</div></div></div></div>`;
+  }).join('');
+}
+async function rDraft(signal, sel){
+  const text=$('#rText').value.trim(); if (!text) { toast('Enter a topic or abstract.'); return; }
+  $('#rOut').hidden=false; $('#rErr').innerHTML=''; $('#rDraft').innerHTML=''; $('#rWarn').innerHTML=''; $('#rRefs').textContent=''; $('#rMeta').textContent='';
+  R_BTNS.forEach(id=>$('#'+id).hidden=true); rSection=''; rRefs='';
+  if (!sel) { rPapers=[]; $('#rPapers').innerHTML=''; $('#rQ').innerHTML=''; $('#rLogBox').hidden=true; }
+  await ndjson('/api/draft',{text,model:MODEL(),papers:sel||null},signal,ev=>{
+    if (ev.type==='status') $('#rSt').innerHTML=`<span class="spin"></span>${esc(ev.text)}`;
+    else if (ev.type==='queries') $('#rQ').innerHTML=ev.queries.map(q=>`<code>${esc(q)}</code>`).join('');
+    else if (ev.type==='papers') { rPapers=ev.papers; rRenderPapers(); if (ev.log&&ev.log.length) { $('#rLogBox').hidden=false; $('#rLog').innerHTML=ev.log.map(l=>`<li>${esc(l)}</li>`).join(''); } }
+    else if (ev.type==='token') { rSection+=ev.text; $('#rDraft').innerHTML=withCites(rSection); }
+    else if (ev.type==='error') $('#rErr').innerHTML=`<div class="errbox">${esc(ev.text)}</div>`;
+    else if (ev.type==='done') {
+      rSection=ev.section; rRefs=ev.references; $('#rDraft').innerHTML=withCites(rSection); $('#rRefs').textContent=rRefs;
+      let w=''; if (ev.bad.length) w+=`<div class="warn">The draft cites ${ev.bad.map(n=>'['+n+']').join(', ')}, which are not in the reference list. Remove them.</div>`;
+      if (ev.unused.length) w+=`<div class="warn">Not cited: ${ev.unused.map(n=>'['+n+']').join(', ')}.</div>`;
+      $('#rWarn').innerHTML=w; $('#rMeta').textContent=`${rPapers.length} papers · ${ev.seconds}s`; R_BTNS.forEach(id=>$('#'+id).hidden=false);
+    }
+  });
+  $('#rSt').textContent='';
+}
+bind($('#rGo'),'Draft related work', s=>rDraft(s,null));
+bind($('#rRewrite'),'Rewrite with selected', s=>{
+  const sel=$$('#rPapers input:checked').map(c=>rPapers[+c.dataset.i]);
+  if (!sel.length) { toast('Tick at least one paper.'); return Promise.resolve(); }
+  return rDraft(s,sel);
+});
+$('#rCopy').onclick=e=>copy(e.target,rSection); $('#rCopyRefs').onclick=e=>copy(e.target,rRefs);
+$('#rCopyBib').onclick=e=>copy(e.target,rPapers.map(p=>bib({...p,source:'arxiv'})).join('\n\n'));
+$('#rDl').onclick=()=>download('related-work.md',`## Related Work (draft)\n\n${rSection}\n\n### References\n\n${rRefs}\n`,'text/markdown');
+chips('#rChips',["noisy knowledge graph refinement with large language models","drug target prediction with knowledge graphs"],t=>{ $('#rText').value=t; });
+
+/* ================= CITATION CHECK ================= */
+let cItems=[];
+const CS={verified:['ok','Verified'],check:['warn','Check details'],possible:['warn','Possible match'],not_found:['bad','Not found'],error:['bad','Lookup error']};
+function cRow(r){
+  const m=r.match, s=CS[r.status]||['bad',r.status];
+  let info='';
+  if (m) info=`<div class="m">Matched: <a class="pt" href="${esc(m.link)}" target="_blank" rel="noopener">${esc(m.title)}</a><br>${esc((m.authors||[]).join(', '))}${(m.authors_total||0)>3?' et al.':''} · ${esc(m.year||'')} ${m.venue?'· '+esc(m.venue):''} ${m.citations!=null?'· '+Number(m.citations).toLocaleString()+' citations':''} · title match ${Math.round(r.score*100)}%</div>`;
+  const issues=(r.issues||[]).map(i=>`<div class="warn">${esc(i)}</div>`).join('');
+  return `<div class="crow" data-status="${r.status}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><div class="ref"><b>[${r.n}]</b> ${esc(r.reference)}</div><span class="pill ${s[0]}">${s[1]}</span></div>${info}${issues}</div>`;
+}
+function cFilter(){ const f=$('#cFilter').value; $$('#cRows .crow').forEach(r=>r.hidden = f!=='all' && r.dataset.status!==f); }
+$('#cFilter').onchange=cFilter;
+async function cRun(signal, body){
+  cItems=[]; $('#cOut').hidden=false; $('#cRows').innerHTML=''; $('#cErr').innerHTML=''; $('#cSum').innerHTML=''; $('#cBar').style.width='0';
+  $('#cCsv').hidden=true; $('#cBib').hidden=true; $('#cFilter').value='all';
+  await ndjson('/api/cite',body,signal,ev=>{
+    if (ev.type==='status') $('#cSt').innerHTML=`<span class="spin"></span>${esc(ev.text)}`;
+    else if (ev.type==='parsed') { if (ev.capped) $('#cErr').innerHTML=`<div class="warn">Found ${ev.total} references; checking the first ${ev.count}.</div>`; }
+    else if (ev.type==='item') { cItems.push(ev.item); $('#cRows').insertAdjacentHTML('beforeend',cRow(ev.item)); $('#cBar').style.width=(100*ev.done/ev.total)+'%'; cFilter(); }
+    else if (ev.type==='error') $('#cErr').innerHTML=`<div class="errbox">${esc(ev.text)}</div>`;
+    else if (ev.type==='done') {
+      $('#cSt').textContent=`Done in ${ev.seconds}s`;
+      $('#cSum').innerHTML=Object.entries(ev.counts).map(([k,v])=>`<span class="pill ${(CS[k]||['',''])[0]}">${(CS[k]||['',k])[1]}: ${v}</span>`).join('');
+      $('#cCsv').hidden=false; $('#cBib').hidden=false;
+    }
+  });
+}
+bind($('#cGo'),'Check pasted references', s=>cRun(s,{text:$('#cText').value}));
+bind($('#cPdfGo'),'Check references in this PDF', s=>{ const f=$('#cPdf').value; if (!f) { toast('No PDF found in the thesis folder.'); return Promise.resolve(); } return cRun(s,{pdf:f}); });
+$('#cCsv').onclick=()=>download('reference-check.csv',['n,status,reference,matched_title,matched_year,link,issues'].concat(cItems.map(r=>[r.n,r.status,r.reference,r.match?r.match.title:'',r.match?r.match.year:'',r.match?r.match.link:'',(r.issues||[]).join('; ')].map(csvCell).join(','))).join('\n'),'text/csv');
+$('#cBib').onclick=e=>copy(e.target,cItems.filter(r=>r.match&&(r.status==='verified'||r.status==='check')).map(r=>bib({...r.match,published:String(r.match.year||'')})).join('\n\n'));
+$('#cDemo').onclick=()=>{ $('#cText').value=`[1] Vaswani, A., Shazeer, N., Parmar, N., et al. (2017). Attention is all you need. NeurIPS.
+[2] Devlin, J., Chang, M., Lee, K., Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. NAACL.
+[3] Gul, H., Naim, A. G. H., Bhat, A. A. (2019). MuCoS: Efficient drug-target prediction through multi-context-aware sampling. BioNLP.
+[4] Smith, J., Lee, K. (2021). Quantum gradient flows for self-aware knowledge graphs. Journal of Imaginary Results, 12, 1-10.`; };
+
+/* ================= THESIS Q&A ================= */
+async function qaAsk(signal){
+  const text=$('#qaQ').value.trim(); if (!text) return; $('#qaQ').value='';
+  const card=document.createElement('div'); card.className='card';
+  card.innerHTML=`<div style="font-weight:650">${esc(text)}</div><div class="muted st"><span class="spin"></span>Starting…</div><div class="ans"></div><div class="warns"></div><details open><summary class="muted" style="cursor:pointer">Sources</summary><div class="srcs"></div></details><div class="muted meta"></div>`;
+  $('#qaFeed').prepend(card); const q=s=>card.querySelector(s); let ans='';
+  await ndjson('/api/qa',{question:text,model:MODEL()},signal,ev=>{
+    if (ev.type==='status') q('.st').innerHTML=`<span class="spin"></span>${esc(ev.text)}`;
+    else if (ev.type==='sources') q('.srcs').innerHTML=ev.sources.map((s,i)=>`<div class="src" id="s${i+1}"><b>[${i+1}]</b> ${esc(s.file)} · page ${s.page} <span class="muted">· similarity ${s.score}</span><div class="muted">${esc(s.text.slice(0,280))}…</div></div>`).join('');
+    else if (ev.type==='token') { ans+=ev.text; q('.ans').innerHTML=withCites(ans); }
+    else if (ev.type==='error') q('.ans').innerHTML=`<div class="errbox">${esc(ev.text)}</div>`;
+    else if (ev.type==='done') { q('.ans').innerHTML=withCites(ev.answer); if (ev.bad.length) q('.warns').innerHTML=`<div class="warn">The answer cites ${ev.bad.map(n=>'['+n+']').join(', ')}, which do not exist. Ignore those.</div>`; q('.meta').textContent=ev.seconds+'s'; }
+  });
+  q('.st').hidden=true;
+}
+bind($('#qaGo'),'Ask',qaAsk); enter('#qaQ','#qaGo');
+chips('#qaChips',["What is the main contribution of this thesis?","What datasets were used in the experiments?","What are the limitations of the proposed methods?","What future work is suggested?"],t=>{ $('#qaQ').value=t; $('#qaGo').click(); });
+$('#qaReindex').onclick=async()=>{ const r=await fetch('/api/reindex',{method:'POST',body:'{}'}); if (r.status===409) toast('Already building.'); loadInfo(); };
+
+/* click a [n] citation: highlight the matching paper or source */
+document.addEventListener('click', e => {
+  const c=e.target.closest('.cite'); if (!c) return;
+  const scope=c.closest('.card')||document, el=scope.querySelector('#s'+c.dataset.n)||document.getElementById('rp'+c.dataset.n); if (!el) return;
+  el.scrollIntoView({behavior:'smooth',block:'center'}); el.classList.add('hl'); setTimeout(()=>el.classList.remove('hl'),1500);
+});
+
+/* status */
+let modelsLoaded=false;
+async function loadInfo(){
+  try {
+    const d=await (await fetch('/api/info')).json();
+    $('#dot').className='dot '+(d.online?'on':'off'); $('#st').textContent=d.online?'Ollama online':'Ollama offline';
+    if (!modelsLoaded && d.models.length) { modelsLoaded=true; $('#model').innerHTML=d.models.map(m=>`<option ${m===d.default?'selected':''}>${esc(m)}</option>`).join(''); }
+    $('#cPdf').innerHTML=d.pdfs.length?d.pdfs.map(f=>`<option>${esc(f)}</option>`).join(''):'<option value="">(no PDFs in thesis/)</option>';
+    const t=d.thesis;
+    $('#qaInfo').textContent = t.status==='ready' ? `Index ready: ${t.files.join(', ')} · ${t.chunks} passages`
+      : t.status==='building' ? `Building index… ${t.msg}` : t.status==='error' ? `Index problem: ${t.msg}` : 'Index not started';
+    $('#qaBanner').style.borderLeftColor = t.status==='ready'?'var(--ok)':t.status==='error'?'var(--bad)':'var(--warn)';
+    if (t.status==='building') setTimeout(loadInfo,2000);
+  } catch { $('#dot').className='dot off'; $('#st').textContent='Server error'; }
+}
+renderLib(); loadInfo();
+const tab=store.get('tab','discover'); const tb=$(`.tab[data-tab=${tab}]`); if (tb) tb.click();
+</script>
+</body>
+</html>
