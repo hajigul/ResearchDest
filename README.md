@@ -1,14 +1,15 @@
-# ResearchDest
+# ResearchDesk
 
 A private, local research assistant. One web app with four tools: **paper discovery**, a **related-work drafter**, a **citation checker**, and **question answering over your own thesis or PDFs**.
 
 The language model runs on your own computer through [Ollama](https://ollama.com). There are no API keys, no accounts, no subscriptions and no per-use cost.
 
-![Discover](ss-discover.png)
+![Discover](Discover.png)
 
 ## Contents
 
 - [What it does](#what-it-does)
+- [Screenshots](#screenshots)
 - [Why local, free and private](#why-local-free-and-private)
 - [Security and privacy: exactly what stays local](#security-and-privacy-exactly-what-stays-local)
 - [How it works](#how-it-works)
@@ -30,11 +31,34 @@ The language model runs on your own computer through [Ollama](https://ollama.com
 | **Citation Check** | A pasted reference list, or the bibliography of a PDF | Each reference marked Verified, Check details, Possible match or Not found, with the matched record and a CSV export |
 | **Thesis Q&A** | A question about your PDF | An answer based only on retrieved passages, with file and page citations you can click |
 
-![Related Work](ss-related.png)
+## Screenshots
 
-![Citation Check](ss-citations.png)
+### Discover
+Search arXiv and OpenAlex, get verified paper cards, save papers to a library and export BibTeX or CSV.
 
-![Thesis Q&A](ss-thesis.png)
+![Discover](Discover.png)
+
+### Related Work: draft
+Paste a topic or abstract. The agent plans its own searches, then writes a cited paragraph. Clicking a citation like [3] jumps to that paper.
+
+![Related Work draft](Related_work1.png)
+
+### Related Work: papers and references
+The reference list is built from real arXiv data. Untick papers that do not fit and rewrite using only the ticked ones.
+
+![Related Work papers](Related_work2.png)
+
+### Citation Check
+Each reference is checked against OpenAlex and arXiv and marked Verified, Check details, Possible match or Not found.
+
+![Citation Check](citation_checker.png)
+
+### Thesis Q&A
+Ask questions about your own PDF and get answers with clickable page sources.
+
+<!-- Upload a screenshot (for example Thesis_QA.png), then delete these two comment lines to show it:
+![Thesis Q&A](Thesis_QA.png)
+-->
 
 ## Why local, free and private
 
@@ -66,7 +90,7 @@ Local does not mean fully offline, so here is the precise picture.
 | Optional | The email in `SCHOLAR_EMAIL`, as a contact address | OpenAlex |
 | One-time setup | Model downloads | Ollama's servers |
 
-Your thesis body text, your abstract text and your questions to Thesis Q&A are **not** sent anywhere. Only the bibliography entries leave your machine, and only when you run a citation check.
+Your thesis body text, your abstract text and your questions to Thesis Q&A are **not** sent anywhere. Only bibliography entries leave your machine, and only when you run a citation check.
 
 **Design choices that protect you**
 
@@ -76,25 +100,25 @@ Your thesis body text, your abstract text and your questions to Thesis Q&A are *
 
 **What it does not do**
 
-- **There is no login.** Anyone who can reach the server can use it. Do not expose it to the internet, and do not port-forward it. The `--lan` option in the older `server.py` removes the localhost-only protection, so avoid it on networks you do not trust.
-- **Local files are not encrypted.** The index in `.cache/` contains embeddings of your thesis text. Treat it like the thesis itself, and keep `thesis/` and `.cache/` out of Git (the `.gitignore` below does this).
-- **It is not an audited security product.** If you handle confidential client documents, get a written agreement and check the data protection rules that apply to you before using it.
+- **There is no login.** Anyone who can reach the server can use it. Do not expose it to the internet or port-forward it. The `--lan` option in the older `server.py` removes the localhost-only protection, so avoid it on networks you do not trust.
+- **Local files are not encrypted.** The index in `.cache/` contains embeddings of your thesis text. Treat it like the thesis itself, and keep `thesis/` and `.cache/` out of Git.
+- **It is not an audited security product.** If you handle confidential client documents, get a written agreement and check the data protection rules that apply to you first.
 
 ## How it works
 
 ```
-                 +----------- Discover ------------+
+Discover
  query --> router (rules or LLM) --> arXiv / OpenAlex --> paper cards --> short streamed overview
 
-                 +--------- Related Work ----------+
+Related Work
  abstract --> LLM plans 3 search phrases --> arXiv --> dedupe + rank --> LLM writes paragraph
           --> Python builds references from real data, flags citation numbers that do not exist
 
-                 +--------- Citation Check --------+
+Citation Check
  reference --> arXiv ID? DOI? --> OpenAlex search --> best match --> compare title, year, first author
           --> Verified / Check details / Possible / Not found
 
-                 +---------- Thesis Q&A ----------+
+Thesis Q&A
  PDF --> pages --> chunks --> local embeddings --> saved index (built once)
  question --> embed --> top 5 passages --> LLM answers only from them --> clickable [n] page sources
 ```
@@ -103,13 +127,13 @@ The central design rule is the same everywhere: **the model writes prose, and Py
 
 ### The four parts in detail
 
-**Discover.** Two modes. *Fast* uses a rule-based router to pick the tool and query, then streams a short overview, so it is quick. *Agent* lets the model choose the tool itself and handles follow-ups such as "the second paper". Searches try an exact phrase first, then a relaxed phrase, then a broad keyword match, and the badge always tells you which one matched. Two-concept questions ("A with B") are split so both concepts must appear. "Highly cited" queries fetch a relevance-ranked pool from OpenAlex and sort it by citations in Python.
+**Discover.** Two modes. *Fast* uses a rule-based router to pick the tool and query, then streams a short overview. *Agent* lets the model choose the tool itself and handles follow-ups such as "the second paper". Searches try an exact phrase first, then a relaxed phrase, then a broad keyword match, and the badge always says which one matched. Two-concept questions ("A with B") are split so both concepts must appear. "Highly cited" queries fetch a relevance-ranked pool from OpenAlex and sort it by citations in Python.
 
 **Related Work.** The model proposes three search phrases (abbreviations expanded, for example "KG" becomes "knowledge graph"). Results are deduplicated and weak matches ranked last. The model sees only abstract snippets, writes 150 to 200 words citing `[1]`, `[2]`, and the app checks that every cited number exists. You can untick papers and rewrite.
 
 **Citation Check.** For each reference it tries an arXiv ID, then a DOI, then a full-text OpenAlex search, then a guessed-title search. It keeps the best match and compares title, year (one year of tolerance for preprints) and first-author surname. It can read the bibliography section straight from a PDF.
 
-**Thesis Q&A.** PDFs in `thesis/` are split into overlapping chunks, embedded with `nomic-embed-text`, and cached. A question is embedded, the five most similar passages are retrieved (with a small keyword bonus), and the model answers using only those, replying "I could not find this in the thesis" when the passages do not contain the answer. The index rebuilds automatically when the PDF changes.
+**Thesis Q&A.** PDFs in `thesis/` are split into overlapping chunks, embedded with `nomic-embed-text`, and cached. A question is embedded, the five most similar passages are retrieved (with a small keyword bonus), and the model answers using only those. It replies "I could not find this in the thesis" when the passages do not contain the answer. The index rebuilds automatically when the PDF changes.
 
 ## Quick start
 
@@ -132,7 +156,7 @@ python suite_server.py
 
 Keep the Ollama app running. The app opens at http://127.0.0.1:8003. On first start it builds the thesis index in the background, which takes a few minutes. The other tools work meanwhile.
 
-If a pip download times out on a slow connection, rerun it with `pip install --resume-retries 5 --default-timeout 100 -r requirements.txt`.
+If a pip download times out on a slow connection, use `pip install --resume-retries 5 --default-timeout 100 -r requirements.txt`.
 
 ## Using each tool
 
@@ -140,7 +164,7 @@ If a pip download times out on a slow connection, rerun it with `pip install --r
 
 **Related Work.** Paste an abstract or topic and click *Draft related work*. Click a citation like `[3]` to jump to that paper. Untick papers that do not fit and click *Rewrite with selected*. Copy the text, references or BibTeX, or download Markdown.
 
-**Citation Check.** Paste references (one per line or numbered), or pick a PDF and check its bibliography. Filter by status and export CSV. "Load test references" fills in a sample that includes one deliberately wrong year and one invented reference, so you can see how each status looks.
+**Citation Check.** Paste references (one per line or numbered), or pick a PDF and check its bibliography. Filter by status and export CSV. "Load test references" fills in a sample with one deliberately wrong year and one invented reference, so you can see how each status looks.
 
 **Thesis Q&A.** Ask a question and read the answer with its numbered sources. Click `[1]` to highlight the matching passage, then open that page in your PDF and confirm. Use *Rebuild index* after changing PDFs.
 
@@ -149,7 +173,7 @@ If a pip download times out on a slow connection, rerun it with `pip install --r
 ```
 Scholar-Agent/
 ├── suite_server.py   # ResearchDesk server: one local web server for all four tools
-├── suite.html        # ResearchDesk front end (sidebar app)
+├── suite.html        # ResearchDesk front end
 ├── tools.py          # arXiv + OpenAlex search, paper details, caching, request pacing
 ├── agent.py          # Discover engine: fast router, agent loop, streaming
 ├── related_work.py   # Related Work engine: query planning, drafting, checks
@@ -159,10 +183,11 @@ Scholar-Agent/
 ├── eval.py           # evaluation suite for Discover
 ├── requirements.txt
 │
-├── server.py + index.html          # earlier standalone ScholarAgent app
-├── rw_server.py + rw.html          # earlier standalone Related Work app
-├── run.sh                          # setup helper for the earlier apps
+├── server.py + index.html     # earlier standalone ScholarAgent app
+├── rw_server.py + rw.html     # earlier standalone Related Work app
+├── run.sh                     # setup helper for the earlier apps
 │
+├── *.png             # screenshots used in this README
 ├── thesis/           # YOUR PDFs (git-ignored, never uploaded)
 └── .cache/           # search cache and thesis index (git-ignored)
 ```
@@ -182,8 +207,8 @@ Cache lifetime and model keep-alive are in `config.py`. Run on another port with
 Discover has a 13-case test suite (`eval.py`) measuring pass rate, right tool called, keyword precision, `sort=date` use, an expected-paper check, invented IDs, and latency. Searches are not cached during evaluation, so timings are honest.
 
 ```bash
-python eval.py --limit 3            # quick check
-python eval.py --mode both          # fast vs agent
+python eval.py --limit 3                 # quick check
+python eval.py --mode both               # fast vs agent
 python eval.py --score FILE_labels.csv   # score your hand labels
 ```
 
@@ -224,8 +249,8 @@ An earlier run, before fixes to query handling and citation-sorted search, score
 
 ## Author
 
-**Haji Gul**, PhD candidate (AI), Universiti Brunei Darussalam.
-Research interests: knowledge graph completion, link prediction, LLM-augmented graph reasoning.
+**Haji Gul**, PhD (AI), Universiti Brunei Darussalam.
+Research interests: knowledge graph completion, NLP, link prediction, LLM-augmented graph reasoning, Transformers, GNN, Complex Network, Community Detection.
 
 GitHub: [@hajigul](https://github.com/hajigul)
 
